@@ -2,26 +2,38 @@
 
 > One-liner tagline describing what your project does
 
-Repository for March 7th Claude Impact Hackathon
+## Team Name
+
+[Your team name here]
+
+## Team Members
+
+| Name | Role |
+|------|------|
+| Daman | TBD |
+| Rajdeep | TBD |
+| Kedar Kulkarni | TBD |
 
 ## Problem Statement
 
-What problem are you solving? Why does it matter?
+What civic problem are you solving?
 
-## Solution
+## What It Does
 
-How does your project solve this problem? What's your approach?
+A short paragraph describing the application.
+
+## Data Sources Used
+
+Which city datasets or resources does your project use?
+
+## Architecture / Approach
+
+Brief description (or diagram) of how the pieces fit together.
 
 ## Demo
 
-- **Live Demo:** [Link to deployed app]
-- **Video:** [Link to demo video]
-
-## Features
-
-- Feature 1
-- Feature 2
-- Feature 3
+- **Live App:** [Link to deployed app]
+- **Demo Video:** [Link to 60-second walkthrough]
 
 ## Tech Stack
 
@@ -51,29 +63,3 @@ cd claude-impact-hackathon
 ```bash
 # Add run commands
 ```
-
-## Architecture
-
-```
-[Add architecture diagram or description]
-```
-
-## Screenshots
-
-[Add screenshots of your application]
-
-## Future Roadmap
-
-- [ ] Future feature 1
-- [ ] Future feature 2
-- [ ] Future feature 3
-
-## Challenges & Learnings
-
-What obstacles did you overcome? What did you learn?
-
-## Team
-
-- Daman
-- Rajdeep
-- Kedar Kulkarni
