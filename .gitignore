@@ -1,0 +1,12 @@
+.env
+.DS_Store
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+dist/
+build/
+data/311/
+data/code_enforcement/
+data/police_calls/

@@ -1,0 +1,10 @@
+geopandas
+shapely
+pandas
+pyogrio
+mcp
+python-dotenv
+requests
+uvicorn
+httpx
+pytest
