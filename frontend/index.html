@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>San Diego Neighborhood Issue Tracker</title>
+  <link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/light/main.css" />
+  <script src="https://js.arcgis.com/4.29/"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    #viewDiv { width: 100%; height: 100vh; }
+
+    #controls {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: white;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+      z-index: 10;
+      width: 260px;
+      font-size: 14px;
+    }
+    #controls h2 {
+      font-size: 16px;
+      margin-bottom: 12px;
+      color: #333;
+    }
+    #controls label {
+      display: block;
+      margin-top: 10px;
+      margin-bottom: 4px;
+      font-weight: 600;
+      color: #555;
+    }
+    #controls select {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    #controls button {
+      margin-top: 14px;
+      width: 100%;
+      padding: 8px;
+      background: #0079c1;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    #controls button:hover { background: #005a8c; }
+
+    #legend {
+      position: absolute;
+      bottom: 30px;
+      right: 15px;
+      background: white;
+      padding: 12px;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+      z-index: 10;
+      font-size: 12px;
+    }
+    #legend h3 { margin-bottom: 8px; font-size: 14px; }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .legend-color {
+      width: 20px;
+      height: 14px;
+      margin-right: 8px;
+      border: 1px solid #999;
+      border-radius: 2px;
+    }
+    #loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255,255,255,0.95);
+      padding: 20px 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+      z-index: 20;
+      font-size: 16px;
+      display: none;
+    }
+    #title-bar {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background: white;
+      padding: 12px 18px;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+      z-index: 10;
+    }
+    #title-bar h1 {
+      font-size: 18px;
+      color: #333;
+      margin: 0;
+    }
+    #title-bar p {
+      font-size: 12px;
+      color: #777;
+      margin-top: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div id="viewDiv"></div>
+
+  <div id="title-bar">
+    <h1>San Diego Neighborhood Issue Tracker</h1>
+    <p>Quality of Life scores by PD beat (2018-2025)</p>
+  </div>
+
+  <div id="controls">
+    <h2>Filters</h2>
+
+    <label for="source">Data Source</label>
+    <select id="source">
+      <option value="all_sources_combined" selected>All Sources</option>
+      <option value="311">311 / Get It Done</option>
+      <option value="code_enforcement">Code Enforcement</option>
+      <option value="police_calls">Police Calls</option>
+    </select>
+
+    <label for="category">Category</label>
+    <select id="category">
+      <option value="all" selected>All</option>
+      <option value="critical">Critical</option>
+      <option value="non_critical">Non-Critical</option>
+    </select>
+
+    <label for="year">Year</label>
+    <select id="year">
+      <option value="">All Years</option>
+      <option value="2025">2025</option>
+      <option value="2024" selected>2024</option>
+      <option value="2023">2023</option>
+      <option value="2022">2022</option>
+      <option value="2021">2021</option>
+      <option value="2020">2020</option>
+      <option value="2019">2019</option>
+      <option value="2018">2018</option>
+    </select>
+
+    <label for="quarter">Quarter</label>
+    <select id="quarter">
+      <option value="" selected>All Quarters</option>
+      <option value="1">Q1</option>
+      <option value="2">Q2</option>
+      <option value="3">Q3</option>
+      <option value="4">Q4</option>
+    </select>
+
+    <button id="applyBtn">Apply Filters</button>
+  </div>
+
+  <div id="legend">
+    <h3>QoL Score (vs City Avg)</h3>
+    <div class="legend-item"><div class="legend-color" style="background:#1a9641"></div> Much Below Avg (&lt;0.5)</div>
+    <div class="legend-item"><div class="legend-color" style="background:#a6d96a"></div> Below Avg (0.5-0.8)</div>
+    <div class="legend-item"><div class="legend-color" style="background:#ffffbf"></div> Near Avg (0.8-1.2)</div>
+    <div class="legend-item"><div class="legend-color" style="background:#fdae61"></div> Above Avg (1.2-1.8)</div>
+    <div class="legend-item"><div class="legend-color" style="background:#d7191c"></div> Much Above Avg (&gt;1.8)</div>
+    <p style="margin-top:6px;color:#888;font-style:italic;">Higher score = more incidents relative to city average</p>
+  </div>
+
+  <div id="loading">Loading data...</div>
+
+  <script>
+    const API_BASE = 'http://localhost:8000';
+
+    require([
+      "esri/Map",
+      "esri/views/MapView",
+      "esri/layers/GeoJSONLayer",
+      "esri/renderers/ClassBreaksRenderer",
+      "esri/symbols/SimpleFillSymbol",
+      "esri/popup/content/TextContent",
+      "esri/Graphic"
+    ], function(Map, MapView, GeoJSONLayer, ClassBreaksRenderer, SimpleFillSymbol) {
+
+      const map = new Map({ basemap: "gray-vector" });
+
+      const view = new MapView({
+        container: "viewDiv",
+        map: map,
+        center: [-117.16, 32.72],
+        zoom: 11
+      });
+
+      // Color ramp: green (low issues) → red (high issues)
+      function getRenderer() {
+        return new ClassBreaksRenderer({
+          field: "avg_score",
+          defaultSymbol: new SimpleFillSymbol({
+            color: [200, 200, 200, 0.5],
+            outline: { color: [100, 100, 100, 0.5], width: 0.5 }
+          }),
+          classBreakInfos: [
+            {
+              minValue: 0, maxValue: 0.5,
+              symbol: new SimpleFillSymbol({
+                color: [26, 150, 65, 0.7],
+                outline: { color: [255, 255, 255, 0.6], width: 0.5 }
+              }),
+              label: "< 0.5 (Much Below Avg)"
+            },
+            {
+              minValue: 0.5, maxValue: 0.8,
+              symbol: new SimpleFillSymbol({
+                color: [166, 217, 106, 0.7],
+                outline: { color: [255, 255, 255, 0.6], width: 0.5 }
+              }),
+              label: "0.5 - 0.8 (Below Avg)"
+            },
+            {
+              minValue: 0.8, maxValue: 1.2,
+              symbol: new SimpleFillSymbol({
+                color: [255, 255, 191, 0.7],
+                outline: { color: [255, 255, 255, 0.6], width: 0.5 }
+              }),
+              label: "0.8 - 1.2 (Near Avg)"
+            },
+            {
+              minValue: 1.2, maxValue: 1.8,
+              symbol: new SimpleFillSymbol({
+                color: [253, 174, 97, 0.7],
+                outline: { color: [255, 255, 255, 0.6], width: 0.5 }
+              }),
+              label: "1.2 - 1.8 (Above Avg)"
+            },
+            {
+              minValue: 1.8, maxValue: 100,
+              symbol: new SimpleFillSymbol({
+                color: [215, 25, 28, 0.7],
+                outline: { color: [255, 255, 255, 0.6], width: 0.5 }
+              }),
+              label: "> 1.8 (Much Above Avg)"
+            }
+          ]
+        });
+      }
+
+      const popupTemplate = {
+        title: "{name} (Beat {beat})",
+        content: [
+          {
+            type: "text",
+            text: "<b>QoL Score:</b> {avg_score}<br/><b>Total Records:</b> {total_records}<br/><br/><em>Score relative to city average (1.0 = average)</em>"
+          }
+        ]
+      };
+
+      let currentLayer = null;
+
+      async function loadData() {
+        const loading = document.getElementById('loading');
+        loading.style.display = 'block';
+
+        const source = document.getElementById('source').value;
+        const category = document.getElementById('category').value;
+        const year = document.getElementById('year').value;
+        const quarter = document.getElementById('quarter').value;
+
+        let url = `${API_BASE}/api/geojson?source=${source}&category=${category}`;
+        if (year) url += `&year=${year}`;
+        if (quarter) url += `&quarter=${quarter}`;
+
+        try {
+          // Fetch GeoJSON and create a blob URL for GeoJSONLayer
+          const resp = await fetch(url);
+          const geojson = await resp.json();
+          const blob = new Blob([JSON.stringify(geojson)], { type: 'application/json' });
+          const blobUrl = URL.createObjectURL(blob);
+
+          // Remove old layer
+          if (currentLayer) {
+            map.remove(currentLayer);
+            URL.revokeObjectURL(currentLayer._blobUrl);
+          }
+
+          const layer = new GeoJSONLayer({
+            url: blobUrl,
+            renderer: getRenderer(),
+            popupTemplate: popupTemplate,
+            title: "Neighborhood QoL"
+          });
+          layer._blobUrl = blobUrl;
+
+          map.add(layer);
+          currentLayer = layer;
+
+          await layer.when();
+          loading.style.display = 'none';
+        } catch (err) {
+          console.error('Error loading data:', err);
+          loading.textContent = 'Error loading data. Is the API server running?';
+        }
+      }
+
+      document.getElementById('applyBtn').addEventListener('click', loadData);
+
+      // Initial load
+      loadData();
+    });
+  </script>
+</body>
+</html>
