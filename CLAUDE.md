@@ -3,7 +3,7 @@
 ## Overview
 Combine San Diego 311 data, code enforcement records, and police call data to visualize and track quality-of-life issues by neighborhood over time. Data is displayed on an ArcGIS map with neighborhood polygons (PD beats), popups, layer toggles, and time filtering.
 
-## Current Phase: Phase 2 — Engineering (in progress)
+## Current Phase: Phase 2 — Engineering (complete, pending confirmation)
 
 ## Team
 - Daman
@@ -25,7 +25,7 @@ Two preprocessing scripts run once to produce the final output:
 - Outbound (ESRI): `get_arcgis_token`, `format_for_esri`, `geocode_address`, `get_geojson_for_map`
 
 **api.py** — Starlette REST API wrapping MCP tools for the frontend:
-- `GET /api/geojson?source=&category=&year=&quarter=` — GeoJSON FeatureCollection with beat polygons + QoL scores
+- `GET /api/geojson?source=&category=&year=&quarter=&month=` — GeoJSON FeatureCollection with beat polygons + QoL scores
 - `GET /api/beats` — Raw beat polygons as GeoJSON
 - `GET /api/token` — ArcGIS OAuth2 token
 - `GET /api/filters` — Available filter values
@@ -34,10 +34,13 @@ Two preprocessing scripts run once to produce the final output:
 ### Frontend (`frontend/`)
 Single `index.html` using ArcGIS Maps SDK for JavaScript (v4.29):
 - Map centered on San Diego with PD beat polygons
-- Color-coded by QoL score (green=low issues → red=high issues)
-- Filter panel: data source, category (critical/non-critical), year, quarter
-- Popup on click: neighborhood name, beat ID, QoL score, record count
-- Legend explaining color scale
+- Color-coded by QoL score: Low (<0.5 green), Medium (0.5-1.5 yellow), High (>1.5 red)
+- Filter panel: My Neighborhood (with zoom-to), data source, category (critical/non-critical)
+- Time slider with granularity toggle (Monthly / Quarterly / Annually)
+- Play/Pause button — animates through time periods at 2-second intervals, supports resume
+- Popup on click: neighborhood name, QoL score
+- Filters auto-apply on selection change (no Apply button)
+- Legend explaining 3-tier color scale
 
 ### ESRI Integration
 - OAuth 2.0 client credentials flow (ARCGIS_CLIENT_ID / ARCGIS_CLIENT_SECRET in .env)
@@ -126,8 +129,8 @@ Open http://localhost:3000
     ├── code_enforcement/               # Code enforcement CSVs (gitignored)
     ├── police_calls/                   # Police calls CSVs (gitignored)
     ├── pd_beats_datasd/                # PD beats shapefile (tracked)
-    ├── category_mappings.json          # Generated mappings (gitignored)
-    └── neighborhood_qol.json           # Generated QoL data (gitignored)
+    ├── category_mappings.json          # Generated mappings (tracked)
+    └── neighborhood_qol.json           # Generated QoL data (tracked)
 ```
 
 ## Key Design Decisions
