@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIVengers — Neighborhood Issue Tracker</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0a0a0a; color: #f0f0f0; }
+  .slide {
+    width: 100vw; height: 100vh; display: flex; flex-direction: column;
+    justify-content: center; align-items: center; padding: 60px 80px;
+    scroll-snap-align: start; position: relative;
+  }
+  .slide:nth-child(odd) { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+  .slide:nth-child(even) { background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%); }
+  html { scroll-snap-type: y mandatory; overflow-y: scroll; scroll-behavior: smooth; }
+  h1 { font-size: 3.2em; margin-bottom: 20px; color: #e94560; }
+  h2 { font-size: 2.4em; margin-bottom: 30px; color: #e94560; }
+  h3 { font-size: 1.6em; margin-bottom: 15px; color: #e94560; }
+  p, li { font-size: 1.3em; line-height: 1.7; color: #d0d0d0; }
+  ul { list-style: none; text-align: left; }
+  ul li::before { content: "▸ "; color: #e94560; font-weight: bold; }
+  .team { display: flex; gap: 60px; margin-top: 30px; }
+  .team-member { text-align: center; }
+  .team-member .name { font-size: 1.4em; font-weight: 600; color: #fff; }
+  .team-member .role { font-size: 1em; color: #888; margin-top: 5px; }
+  table { border-collapse: collapse; margin-top: 20px; font-size: 1.1em; }
+  th, td { padding: 12px 24px; text-align: left; border-bottom: 1px solid #333; }
+  th { color: #e94560; font-weight: 600; }
+  td { color: #ccc; }
+  .arch-box {
+    background: #111; border: 1px solid #333; border-radius: 12px;
+    padding: 30px 40px; margin-top: 20px; font-family: monospace;
+    font-size: 1.1em; line-height: 1.8; white-space: pre; color: #8ce;
+  }
+  .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; width: 80%; }
+  .metric-card {
+    background: rgba(255,255,255,0.05); border: 1px solid #333; border-radius: 12px;
+    padding: 25px; text-align: center;
+  }
+  .metric-card .value { font-size: 2.4em; font-weight: bold; color: #e94560; }
+  .metric-card .label { font-size: 1em; color: #999; margin-top: 8px; }
+  .slide-num {
+    position: absolute; bottom: 20px; right: 30px;
+    font-size: 0.9em; color: #555;
+  }
+  .subtitle { font-size: 1.5em; color: #999; margin-bottom: 30px; }
+  .highlight { color: #e94560; font-weight: 600; }
+  .green { color: #4caf50; }
+  .yellow { color: #ffc107; }
+  .red { color: #e94560; }
+  .score-demo { display: flex; gap: 20px; margin-top: 20px; }
+  .score-box { padding: 15px 30px; border-radius: 8px; text-align: center; font-size: 1.2em; }
+  .score-low { background: rgba(76,175,80,0.3); border: 2px solid #4caf50; }
+  .score-med { background: rgba(255,193,7,0.3); border: 2px solid #ffc107; }
+  .score-high { background: rgba(233,69,96,0.3); border: 2px solid #e94560; }
+</style>
+</head>
+<body>
+
+<!-- Slide 1: Title -->
+<div class="slide">
+  <h1>Neighborhood Issue Tracker</h1>
+  <p class="subtitle">Tracking Quality of Life Across San Diego</p>
+  <div class="team">
+    <div class="team-member">
+      <div class="name">Daman Singh</div>
+      <div class="role">Development & Orchestration</div>
+    </div>
+    <div class="team-member">
+      <div class="name">Rajdeep Singh</div>
+      <div class="role">Data Modeling & Design</div>
+    </div>
+    <div class="team-member">
+      <div class="name">Kedar Kulkarni</div>
+      <div class="role">Data Modeling & Design</div>
+    </div>
+  </div>
+  <p style="margin-top: 30px; color: #666;">Team AIVengers | Claude Impact Hackathon 2026</p>
+  <div class="slide-num">1 / 8</div>
+</div>
+
+<!-- Slide 2: Problem -->
+<div class="slide">
+  <h2>The Problem</h2>
+  <ul>
+    <li>San Diego generates <span class="highlight">6 million+</span> civic records across 3 data sources</li>
+    <li>311 requests, code enforcement, and police calls live in <span class="highlight">separate silos</span></li>
+    <li>No unified way to measure or compare <span class="highlight">neighborhood quality of life</span></li>
+    <li>Residents and city staff can't track if conditions are <span class="highlight">improving or declining</span></li>
+  </ul>
+  <div class="slide-num">2 / 8</div>
+</div>
+
+<!-- Slide 3: Solution -->
+<div class="slide">
+  <h2>Our Solution</h2>
+  <ul>
+    <li>Combine <span class="highlight">3 city datasets</span> into a single Quality of Life (QoL) score per neighborhood</li>
+    <li>Classify events as <span class="highlight">critical vs. non-critical</span> with weighted scoring</li>
+    <li>Visualize on an <span class="highlight">interactive ArcGIS map</span> with 135 PD beat polygons</li>
+    <li>Animate QoL trends over time with <span class="highlight">play/pause time slider</span> (2018-2025)</li>
+  </ul>
+  <div class="score-demo">
+    <div class="score-box score-low"><span class="green">Low QoL Score</span><br><small>&lt; 0.5 (better than average)</small></div>
+    <div class="score-box score-med"><span class="yellow">Medium</span><br><small>0.5 - 1.5 (near average)</small></div>
+    <div class="score-box score-high"><span class="red">High</span><br><small>&gt; 1.5 (worse than average)</small></div>
+  </div>
+  <div class="slide-num">3 / 8</div>
+</div>
+
+<!-- Slide 4: Data Sources -->
+<div class="slide">
+  <h2>Data Sources</h2>
+  <table>
+    <tr><th>Dataset</th><th>Records</th><th>Source</th></tr>
+    <tr><td>311 / Get It Done Requests</td><td>~2.7M</td><td>data.sandiego.gov</td></tr>
+    <tr><td>Code Enforcement</td><td>~22K</td><td>data.sandiego.gov</td></tr>
+    <tr><td>Police Calls for Service</td><td>~3.3M</td><td>data.sandiego.gov</td></tr>
+    <tr><td>PD Beats Shapefile</td><td>135 beats</td><td>data.sandiego.gov</td></tr>
+  </table>
+  <p style="margin-top: 30px;">Total: <span class="highlight">~6 million records</span> processed across <span class="highlight">135 neighborhoods</span> over <span class="highlight">8 years</span></p>
+  <div class="slide-num">4 / 8</div>
+</div>
+
+<!-- Slide 5: Architecture -->
+<div class="slide">
+  <h2>Architecture</h2>
+  <div class="arch-box">
+CSV/Shapefile Data (6M+ records)
+        |
+        v
+Preprocessing Scripts (Python)
+  - classify events (critical/non-critical)
+  - spatial joins (point-in-polygon)
+  - QoL scoring (weighted, relative to city avg)
+        |
+        v
+MCP Server + REST API (FastMCP / Starlette)
+  - GeoJSON, filters, ArcGIS OAuth tokens
+        |
+        v
+Frontend (ArcGIS Maps SDK v4.29)
+  - Interactive map, time slider, filters</div>
+  <div class="slide-num">5 / 8</div>
+</div>
+
+<!-- Slide 6: Testing & Quality -->
+<div class="slide">
+  <h2>Testing & Quality</h2>
+  <div class="metric-grid">
+    <div class="metric-card">
+      <div class="value">30/30</div>
+      <div class="label">Automated Tests Passing</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">4.2s</div>
+      <div class="label">Test Suite Runtime</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">1,179</div>
+      <div class="label">Lines of Source Code</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">0</div>
+      <div class="label">Critical Security Issues</div>
+    </div>
+  </div>
+  <p style="margin-top: 30px;">Unit tests cover data pipeline, MCP server tools, and all 5 REST API endpoints</p>
+  <div class="slide-num">6 / 8</div>
+</div>
+
+<!-- Slide 7: AI Token Economics -->
+<div class="slide">
+  <h2>AI Token Economics</h2>
+  <table>
+    <tr><th>Phase</th><th>Model</th><th>Tokens</th><th>Est. Cost</th></tr>
+    <tr><td>1. Research & Planning</td><td>claude-opus-4-6</td><td>~33K</td><td>~$0.60</td></tr>
+    <tr><td>2. Engineering</td><td>claude-sonnet-4-6</td><td>~105K</td><td>~$1.00</td></tr>
+    <tr><td>3. Testing</td><td>claude-opus-4-6</td><td>~52K</td><td>~$1.20</td></tr>
+    <tr><td>4. Demo & Wrap-up</td><td>claude-opus-4-6</td><td>~65K</td><td>~$1.50</td></tr>
+    <tr><th>Total</th><th></th><th>~255K</th><th>~$4.30</th></tr>
+  </table>
+  <p style="margin-top: 30px;">Full-stack civic app processing <span class="highlight">6M+ records</span> built for <span class="highlight">under $5</span> in AI costs</p>
+  <div class="slide-num">7 / 8</div>
+</div>
+
+<!-- Slide 8: Demo & Links -->
+<div class="slide">
+  <h2>Demo</h2>
+  <ul>
+    <li>Demo Video: <span class="highlight">drive.google.com (60s walkthrough)</span></li>
+    <li>GitHub: <span class="highlight">github.com/rdsingh/claude-impact-hackathon</span></li>
+    <li>Run locally: <span style="font-family: monospace; color: #8ce;">python3 mcp-server/api.py & python3 -m http.server 3000 --directory frontend</span></li>
+  </ul>
+  <p style="margin-top: 40px; font-size: 1.5em; color: #e94560;">Thank you!</p>
+  <div class="slide-num">8 / 8</div>
+</div>
+
+</body>
+</html>

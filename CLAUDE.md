@@ -3,7 +3,12 @@
 ## Overview
 Combine San Diego 311 data, code enforcement records, and police call data to visualize and track quality-of-life issues by neighborhood over time. Data is displayed on an ArcGIS map with neighborhood polygons (PD beats), popups, layer toggles, and time filtering.
 
-## Current Phase: Phase 2 — Engineering (complete, pending confirmation)
+## All Phases Complete
+
+- Phase 1 (Research & Planning) — complete.
+- Phase 2 (Engineering) — complete.
+- Phase 3 (Testing) — complete. 30/30 automated tests passing, 4.23s.
+- Phase 4 (Demo, Presentation, wrap-up) — complete. 8-slide deck, product metrics, token tracking.
 
 ## Team
 - Daman
@@ -124,6 +129,12 @@ Open http://localhost:3000
 │   └── api.py                          # REST API for frontend
 ├── frontend/
 │   └── index.html                      # ArcGIS Maps SDK frontend
+├── tests/
+│   ├── test_data_pipeline.py           # U1-U7: category mappings + QoL data validation
+│   ├── test_mcp_server.py              # U8-U11: MCP server tool tests
+│   └── test_api.py                     # U12-U16 + I2: REST API endpoint tests
+├── presentation/
+│   └── slides.html                     # 8-slide HTML presentation
 └── data/
     ├── 311/                            # Get It Done CSVs (gitignored)
     ├── code_enforcement/               # Code enforcement CSVs (gitignored)
