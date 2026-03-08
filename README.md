@@ -62,7 +62,7 @@ Local CSV/Shapefile Data
 ## Demo
 
 - **Live App:** N/A
-- **Demo Video:** demo/AIVengers Demo Video
+- **Demo Video:** [AIVengers Demo Video](https://drive.google.com/file/d/10QzSw4p2CN67tV0MvgL8Auj703vEU707/view?usp=sharing)
 
 ## Tech Stack
 
