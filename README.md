@@ -61,8 +61,8 @@ Local CSV/Shapefile Data
 
 ## Demo
 
-- **Live App:** [Link to deployed app]
-- **Demo Video:** [Link to 60-second walkthrough]
+- **Live App:** N/A
+- **Demo Video:** demo/AIVengers Demo Video
 
 ## Tech Stack
 
