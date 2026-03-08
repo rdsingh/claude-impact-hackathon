@@ -54,6 +54,43 @@
       cursor: pointer;
     }
     #controls button:hover { background: #005a8c; }
+    #granularity-btns {
+      display: flex;
+      gap: 4px;
+    }
+    .gran-btn {
+      flex: 1;
+      margin-top: 0 !important;
+      padding: 5px 4px !important;
+      font-size: 11px !important;
+      background: #e8e8e8 !important;
+      color: #555 !important;
+      border: 1px solid #ccc !important;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .gran-btn.active {
+      background: #0079c1 !important;
+      color: white !important;
+      border-color: #0079c1 !important;
+    }
+    .gran-btn:hover:not(.active) { background: #d0d0d0 !important; }
+    #timeSlider {
+      -webkit-appearance: none;
+      height: 6px;
+      border-radius: 3px;
+      background: #ddd;
+      outline: none;
+      margin-top: 6px;
+    }
+    #timeSlider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #0079c1;
+      cursor: pointer;
+    }
 
     #legend {
       position: absolute;
@@ -119,11 +156,16 @@
 
   <div id="title-bar">
     <h1>San Diego Neighborhood Issue Tracker</h1>
-    <p>Quality of Life scores by PD beat (2018-2025)</p>
+    <p>Quality of Life scores (2018-2025)</p>
   </div>
 
   <div id="controls">
     <h2>Filters</h2>
+
+    <label for="neighborhood">My Neighborhood</label>
+    <select id="neighborhood">
+      <option value="" selected>All Neighborhoods</option>
+    </select>
 
     <label for="source">Data Source</label>
     <select id="source">
@@ -140,38 +182,25 @@
       <option value="non_critical">Non-Critical</option>
     </select>
 
-    <label for="year">Year</label>
-    <select id="year">
-      <option value="">All Years</option>
-      <option value="2025">2025</option>
-      <option value="2024" selected>2024</option>
-      <option value="2023">2023</option>
-      <option value="2022">2022</option>
-      <option value="2021">2021</option>
-      <option value="2020">2020</option>
-      <option value="2019">2019</option>
-      <option value="2018">2018</option>
-    </select>
+    <label for="granularity">Time Granularity</label>
+    <div id="granularity-btns">
+      <button class="gran-btn" data-gran="annually">Annually</button>
+      <button class="gran-btn active" data-gran="quarterly">Quarterly</button>
+      <button class="gran-btn" data-gran="monthly">Monthly</button>
+    </div>
 
-    <label for="quarter">Quarter</label>
-    <select id="quarter">
-      <option value="" selected>All Quarters</option>
-      <option value="1">Q1</option>
-      <option value="2">Q2</option>
-      <option value="3">Q3</option>
-      <option value="4">Q4</option>
-    </select>
+    <label for="timeSlider">Time Period</label>
+    <input type="range" id="timeSlider" min="0" max="31" value="24" style="width:100%" />
+    <div id="timeLabel" style="text-align:center;font-size:13px;color:#333;margin-top:4px;">2024 Q1</div>
 
-    <button id="applyBtn">Apply Filters</button>
+    <button id="playBtn">&#9654; Play</button>
   </div>
 
   <div id="legend">
     <h3>QoL Score (vs City Avg)</h3>
-    <div class="legend-item"><div class="legend-color" style="background:#1a9641"></div> Much Below Avg (&lt;0.5)</div>
-    <div class="legend-item"><div class="legend-color" style="background:#a6d96a"></div> Below Avg (0.5-0.8)</div>
-    <div class="legend-item"><div class="legend-color" style="background:#ffffbf"></div> Near Avg (0.8-1.2)</div>
-    <div class="legend-item"><div class="legend-color" style="background:#fdae61"></div> Above Avg (1.2-1.8)</div>
-    <div class="legend-item"><div class="legend-color" style="background:#d7191c"></div> Much Above Avg (&gt;1.8)</div>
+    <div class="legend-item"><div class="legend-color" style="background:#1a9641"></div> Low (&lt;0.5)</div>
+    <div class="legend-item"><div class="legend-color" style="background:#ffffbf"></div> Medium (0.5-1.5)</div>
+    <div class="legend-item"><div class="legend-color" style="background:#d7191c"></div> High (&gt;1.5)</div>
     <p style="margin-top:6px;color:#888;font-style:italic;">Higher score = more incidents relative to city average</p>
   </div>
 
@@ -186,9 +215,8 @@
       "esri/layers/GeoJSONLayer",
       "esri/renderers/ClassBreaksRenderer",
       "esri/symbols/SimpleFillSymbol",
-      "esri/popup/content/TextContent",
-      "esri/Graphic"
-    ], function(Map, MapView, GeoJSONLayer, ClassBreaksRenderer, SimpleFillSymbol) {
+      "esri/geometry/Extent"
+    ], function(Map, MapView, GeoJSONLayer, ClassBreaksRenderer, SimpleFillSymbol, Extent) {
 
       const map = new Map({ basemap: "gray-vector" });
 
@@ -214,55 +242,152 @@
                 color: [26, 150, 65, 0.7],
                 outline: { color: [255, 255, 255, 0.6], width: 0.5 }
               }),
-              label: "< 0.5 (Much Below Avg)"
+              label: "Low (< 0.5)"
             },
             {
-              minValue: 0.5, maxValue: 0.8,
-              symbol: new SimpleFillSymbol({
-                color: [166, 217, 106, 0.7],
-                outline: { color: [255, 255, 255, 0.6], width: 0.5 }
-              }),
-              label: "0.5 - 0.8 (Below Avg)"
-            },
-            {
-              minValue: 0.8, maxValue: 1.2,
+              minValue: 0.5, maxValue: 1.5,
               symbol: new SimpleFillSymbol({
                 color: [255, 255, 191, 0.7],
                 outline: { color: [255, 255, 255, 0.6], width: 0.5 }
               }),
-              label: "0.8 - 1.2 (Near Avg)"
+              label: "Medium (0.5 - 1.5)"
             },
             {
-              minValue: 1.2, maxValue: 1.8,
-              symbol: new SimpleFillSymbol({
-                color: [253, 174, 97, 0.7],
-                outline: { color: [255, 255, 255, 0.6], width: 0.5 }
-              }),
-              label: "1.2 - 1.8 (Above Avg)"
-            },
-            {
-              minValue: 1.8, maxValue: 100,
+              minValue: 1.5, maxValue: 100,
               symbol: new SimpleFillSymbol({
                 color: [215, 25, 28, 0.7],
                 outline: { color: [255, 255, 255, 0.6], width: 0.5 }
               }),
-              label: "> 1.8 (Much Above Avg)"
+              label: "High (> 1.5)"
             }
           ]
         });
       }
 
       const popupTemplate = {
-        title: "{name} (Beat {beat})",
+        title: "{name}",
         content: [
           {
             type: "text",
-            text: "<b>QoL Score:</b> {avg_score}<br/><b>Total Records:</b> {total_records}<br/><br/><em>Score relative to city average (1.0 = average)</em>"
+            text: "<b>QoL Score:</b> {avg_score}<br/><br/><em>Score relative to city average (1.0 = average)</em>"
           }
         ]
       };
 
       let currentLayer = null;
+      let granularity = 'quarterly';
+
+      // Time steps for each granularity
+      const timeSteps = {
+        annually: [],
+        quarterly: [],
+        monthly: []
+      };
+      for (let y = 2018; y <= 2025; y++) {
+        timeSteps.annually.push({ year: y, label: `${y}` });
+        for (let q = 1; q <= 4; q++) {
+          timeSteps.quarterly.push({ year: y, quarter: q, label: `${y} Q${q}` });
+        }
+        for (let m = 1; m <= 12; m++) {
+          const mName = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m-1];
+          timeSteps.monthly.push({ year: y, month: m, label: `${mName} ${y}` });
+        }
+      }
+
+      function updateSliderRange() {
+        const slider = document.getElementById('timeSlider');
+        const steps = timeSteps[granularity];
+        slider.max = steps.length - 1;
+        // Default to latest
+        slider.value = steps.length - 1;
+        updateTimeLabel();
+      }
+
+      function updateTimeLabel() {
+        const slider = document.getElementById('timeSlider');
+        const steps = timeSteps[granularity];
+        const idx = parseInt(slider.value);
+        document.getElementById('timeLabel').textContent = steps[idx].label;
+      }
+
+      function getTimeParams() {
+        const slider = document.getElementById('timeSlider');
+        const steps = timeSteps[granularity];
+        const step = steps[parseInt(slider.value)];
+        return step;
+      }
+
+      let playInterval = null;
+      let isPlaying = false;
+
+      // Granularity button handlers
+      document.querySelectorAll('.gran-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          stopPlayback();
+          document.querySelectorAll('.gran-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          granularity = btn.dataset.gran;
+          updateSliderRange();
+          loadData();
+        });
+      });
+
+      // Auto-apply on source/category change
+      document.getElementById('source').addEventListener('change', () => { stopPlayback(); loadData(); });
+      document.getElementById('category').addEventListener('change', () => { stopPlayback(); loadData(); });
+
+      // Slider change handler
+      document.getElementById('timeSlider').addEventListener('input', () => {
+        updateTimeLabel();
+      });
+      document.getElementById('timeSlider').addEventListener('change', () => {
+        stopPlayback();
+        loadData();
+      });
+
+      // Play/Pause
+      function startPlayback() {
+        isPlaying = true;
+        const btn = document.getElementById('playBtn');
+        btn.innerHTML = '&#9646;&#9646; Pause';
+        const slider = document.getElementById('timeSlider');
+
+        // If at the end, loop back to beginning
+        if (parseInt(slider.value) >= parseInt(slider.max)) {
+          slider.value = 0;
+          updateTimeLabel();
+          loadData();
+        }
+
+        playInterval = setInterval(() => {
+          const max = parseInt(slider.max);
+          const current = parseInt(slider.value);
+          if (current >= max) {
+            stopPlayback();
+            return;
+          }
+          slider.value = current + 1;
+          updateTimeLabel();
+          loadData();
+        }, 2000);
+      }
+
+      function stopPlayback() {
+        if (playInterval) {
+          clearInterval(playInterval);
+          playInterval = null;
+        }
+        isPlaying = false;
+        document.getElementById('playBtn').innerHTML = '&#9654; Play';
+      }
+
+      document.getElementById('playBtn').addEventListener('click', () => {
+        if (isPlaying) {
+          stopPlayback();
+        } else {
+          startPlayback();
+        }
+      });
 
       async function loadData() {
         const loading = document.getElementById('loading');
@@ -270,12 +395,12 @@
 
         const source = document.getElementById('source').value;
         const category = document.getElementById('category').value;
-        const year = document.getElementById('year').value;
-        const quarter = document.getElementById('quarter').value;
+        const timeParams = getTimeParams();
 
         let url = `${API_BASE}/api/geojson?source=${source}&category=${category}`;
-        if (year) url += `&year=${year}`;
-        if (quarter) url += `&quarter=${quarter}`;
+        if (timeParams.year) url += `&year=${timeParams.year}`;
+        if (timeParams.quarter) url += `&quarter=${timeParams.quarter}`;
+        if (timeParams.month) url += `&month=${timeParams.month}`;
 
         try {
           // Fetch GeoJSON and create a blob URL for GeoJSONLayer
@@ -309,9 +434,61 @@
         }
       }
 
-      document.getElementById('applyBtn').addEventListener('click', loadData);
+      // Populate neighborhood dropdown and handle zoom
+      let beatsData = null;
 
-      // Initial load
+      async function loadNeighborhoods() {
+        const resp = await fetch(`${API_BASE}/api/beats`);
+        beatsData = await resp.json();
+
+        const names = beatsData.features
+          .map(f => f.properties.name)
+          .filter(n => n && n.trim())
+          .sort();
+        const unique = [...new Set(names)];
+
+        const select = document.getElementById('neighborhood');
+        unique.forEach(name => {
+          const opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = name;
+          select.appendChild(opt);
+        });
+      }
+
+      document.getElementById('neighborhood').addEventListener('change', () => {
+        stopPlayback();
+        const name = document.getElementById('neighborhood').value;
+        if (!name || !beatsData) {
+          // Reset to full San Diego view
+          view.goTo({ center: [-117.16, 32.72], zoom: 11 });
+          return;
+        }
+        // Find all matching features and compute combined extent
+        const matching = beatsData.features.filter(f => f.properties.name === name);
+        if (matching.length === 0) return;
+
+        // Build extent from all matching polygon coordinates
+        let xmin = Infinity, ymin = Infinity, xmax = -Infinity, ymax = -Infinity;
+        matching.forEach(f => {
+          const coords = f.geometry.type === 'MultiPolygon'
+            ? f.geometry.coordinates.flat(2)
+            : f.geometry.coordinates.flat(1);
+          coords.forEach(([x, y]) => {
+            if (x < xmin) xmin = x;
+            if (x > xmax) xmax = x;
+            if (y < ymin) ymin = y;
+            if (y > ymax) ymax = y;
+          });
+        });
+
+        const extent = new Extent({ xmin, ymin, xmax, ymax, spatialReference: { wkid: 4326 } });
+        view.goTo(extent.expand(1.3), { duration: 1000 });
+      });
+
+      // Initialize
+      loadNeighborhoods();
+      updateSliderRange();
       loadData();
     });
   </script>
